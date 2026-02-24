@@ -10,29 +10,41 @@ from pathlib import Path
 st.set_page_config(page_title="Macro → Equity Regime Backtest", layout="wide")
 st.title("Macro → Equity Regime Prediction (Walk-Forward Backtest)")
 
-DATA_DIR = Path("data")
-SCORES_PATH = DATA_DIR / "scores.csv"
-PREDS_PATH = DATA_DIR / "predictions.csv"
+def run(cmd):
+    # Capture stdout/stderr so we can display it in Streamlit
+    return subprocess.run(
+        cmd,
+        check=True,
+        text=True,
+        capture_output=True,
+        env=os.environ.copy()
+    )
 
 def ensure_outputs_exist():
     DATA_DIR.mkdir(exist_ok=True)
 
-    # If outputs missing, run pipeline steps
     if not (SCORES_PATH.exists() and PREDS_PATH.exists()):
         with st.spinner("Generating data for the dashboard (first run)…"):
-            # Run scripts in order
-            subprocess.check_call(["python", "src/fetch_data.py"])
-            subprocess.check_call(["python", "src/build_features.py"])
-            subprocess.check_call(["python", "src/train_eval.py"])
+            try:
+                out1 = run(["python3", "src/fetch_data.py"])
+                out2 = run(["python3", "src/build_features.py"])
+                out3 = run(["python3", "src/train_eval.py"])
 
-try:
-    ensure_outputs_exist()
-except Exception as e:
-    st.error("Failed to generate data files on the server.")
-    st.code(str(e))
-    st.stop()
+                st.success("Data generated successfully.")
+                with st.expander("Build logs"):
+                    st.code(out1.stdout + "\n" + out1.stderr)
+                    st.code(out2.stdout + "\n" + out2.stderr)
+                    st.code(out3.stdout + "\n" + out3.stderr)
 
-# Now load
+            except subprocess.CalledProcessError as e:
+                st.error("Failed to generate data files on the server.")
+                st.code(" ".join(e.cmd))
+                st.code(e.stdout or "")
+                st.code(e.stderr or "")
+                st.stop()
+
+ensure_outputs_exist()
+
 scores = pd.read_csv(SCORES_PATH)
 preds = pd.read_csv(PREDS_PATH, index_col=0, parse_dates=True)
 # ----------------------------
