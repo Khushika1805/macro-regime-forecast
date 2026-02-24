@@ -13,6 +13,7 @@ Models evaluated:
 - **Random Forest** – nonlinear benchmark
 
 A **Streamlit dashboard** is included to visualize scores, regime distribution, and confusion matrices.
+[View Dashboard] (https://macro-regime-forecast-gouopnkmx588prj2rxepwt.streamlit.app)
 
 ---
 
@@ -48,6 +49,18 @@ Time-series forecasting is easy to accidentally “cheat” on (data leakage). T
 
 
 ---
+
+## Run the dashboard:
+  streamlit run app/app.py
+  
+  Dashboard includes:
+    model score table (accuracy + macro-F1)
+    true regime class distribution
+    predictions over time (true vs predicted)
+    confusion matrix for selected model
+
+
+  
 
 
 
