@@ -3,7 +3,38 @@ import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import os
+import subprocess
+from pathlib import Path
 
+st.set_page_config(page_title="Macro → Equity Regime Backtest", layout="wide")
+st.title("Macro → Equity Regime Prediction (Walk-Forward Backtest)")
+
+DATA_DIR = Path("data")
+SCORES_PATH = DATA_DIR / "scores.csv"
+PREDS_PATH = DATA_DIR / "predictions.csv"
+
+def ensure_outputs_exist():
+    DATA_DIR.mkdir(exist_ok=True)
+
+    # If outputs missing, run pipeline steps
+    if not (SCORES_PATH.exists() and PREDS_PATH.exists()):
+        with st.spinner("Generating data for the dashboard (first run)…"):
+            # Run scripts in order
+            subprocess.check_call(["python", "src/fetch_data.py"])
+            subprocess.check_call(["python", "src/build_features.py"])
+            subprocess.check_call(["python", "src/train_eval.py"])
+
+try:
+    ensure_outputs_exist()
+except Exception as e:
+    st.error("Failed to generate data files on the server.")
+    st.code(str(e))
+    st.stop()
+
+# Now load
+scores = pd.read_csv(SCORES_PATH)
+preds = pd.read_csv(PREDS_PATH, index_col=0, parse_dates=True)
 # ----------------------------
 # Helpers
 # ----------------------------
@@ -12,15 +43,6 @@ LABEL_MAP = {0: "Down", 1: "Flat", 2: "Up"}
 def decode(series: pd.Series) -> pd.Series:
     return series.map(LABEL_MAP)
 
-# ----------------------------
-# App
-# ----------------------------
-st.set_page_config(page_title="Macro → Equity Regime Backtest", layout="wide")
-st.title("Macro → Equity Regime Prediction (Walk-Forward Backtest)")
-
-# Load data
-scores = pd.read_csv("data/scores.csv")
-preds = pd.read_csv("data/predictions.csv", index_col=0, parse_dates=True)
 
 # Sidebar controls
 st.sidebar.header("Controls")
