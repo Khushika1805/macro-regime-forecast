@@ -1,3 +1,6 @@
+streamlit==1.41.1
+altair==5.5.0
+
 pandas
 numpy
 matplotlib
@@ -5,5 +8,4 @@ scikit-learn
 statsmodels
 yfinance
 fredapi
-streamlit
 plotly
