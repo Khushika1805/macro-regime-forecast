@@ -45,6 +45,12 @@ def walk_forward_backtest(df, feature_cols, target_col="regime", start_train=60)
         y_true.append(int(y_test.iloc[0]))
         dates.append(df.index[i])
 
+    if len(dates) == 0:
+    raise ValueError(
+        f"Walk-forward produced 0 predictions. start_train={start_train}, len(df)={len(df)}. "
+        "Lower start_train or check why features.csv is short."
+    )
+
     results = pd.DataFrame({
         "date": dates,
         "y_true": y_true,
@@ -63,9 +69,20 @@ def score_model(y_true, y_pred, name):
 def main():
     df = pd.read_csv("data/features.csv", index_col=0, parse_dates=True)
 
-    feature_cols = [c for c in df.columns if c not in ["regime", "spy_ret_fwd1"]]
-    res = walk_forward_backtest(df, feature_cols, start_train=84)  # 7 years train warmup
+    n = len(df)
+    print("Features rows:", n)
+    
+    # If too few rows, fail early with a clear message
+    if n < 30:
+        raise ValueError(f"Not enough rows after feature engineering: {n}. Check feature creation/dropna.")
+    
+    # Auto-adjust start_train so we always have a test set
+    start_train = min(84, max(24, n // 3))  # at least 24 months, otherwise 1/3 of data
+    print("Using start_train:", start_train)
 
+    feature_cols = [c for c in df.columns if c not in ["regime", "spy_ret_fwd1"]]
+    res = walk_forward_backtest(df, feature_cols, start_train=start_train)
+    
     scores = []
     scores.append(score_model(res["y_true"], res["pred_base"], "baseline_majority"))
     scores.append(score_model(res["y_true"], res["pred_lr"], "log_reg"))
