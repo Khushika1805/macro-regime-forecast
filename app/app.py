@@ -1,7 +1,7 @@
 import os
 import subprocess
 from pathlib import Path
-
+import sys
 import pandas as pd
 import streamlit as st
 import numpy as np
@@ -26,9 +26,9 @@ PREDS_PATH = DATA_DIR / "predictions.csv"
 def decode(series: pd.Series) -> pd.Series:
     return series.map(LABEL_MAP)
 
-def run(cmd):
+def run_script(script_path: str):
     return subprocess.run(
-        cmd,
+        [sys.executable, script_path],
         check=True,
         text=True,
         capture_output=True,
@@ -41,9 +41,9 @@ def ensure_outputs_exist():
     if not (SCORES_PATH.exists() and PREDS_PATH.exists()):
         with st.spinner("Generating data for the dashboard (first run)…"):
             try:
-                out1 = run(["python3", "src/fetch_data.py"])
-                out2 = run(["python3", "src/build_features.py"])
-                out3 = run(["python3", "src/train_eval.py"])
+                out1 = run_script("src/fetch_data.py")
+                out2 = run_script("src/build_features.py")
+                out3 = run_script("src/train_eval.py")
 
                 st.success("Data generated successfully.")
                 with st.expander("Build logs"):
