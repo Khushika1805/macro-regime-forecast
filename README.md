@@ -13,7 +13,7 @@ Models evaluated:
 - **Random Forest** – nonlinear benchmark
 
 A **Streamlit dashboard** is included to visualize scores, regime distribution, and confusion matrices.
-[View Dashboard] (https://macro-regime-forecast-gouopnkmx588prj2rxepwt.streamlit.app)
+- [View Dashboard] (https://macro-regime-forecast-gouopnkmx588prj2rxepwt.streamlit.app)
 
 ---
 
