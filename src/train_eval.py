@@ -46,10 +46,10 @@ def walk_forward_backtest(df, feature_cols, target_col="regime", start_train=60)
         dates.append(df.index[i])
 
     if len(dates) == 0:
-    raise ValueError(
-        f"Walk-forward produced 0 predictions. start_train={start_train}, len(df)={len(df)}. "
-        "Lower start_train or check why features.csv is short."
-    )
+        raise ValueError(
+            f"Walk-forward produced 0 predictions. start_train={start_train}, len(df)={len(df)}. "
+            "Lower start_train or check why features.csv is short."
+        )
 
     results = pd.DataFrame({
         "date": dates,
